@@ -1,26 +1,39 @@
 import asyncio
 import concurrent.futures
+import importlib
 import time
 
 import aiohttp
 from aiohttp import web
 import cv2
 import numpy as np
-from turbojpeg import TurboJPEG, TJPF_BGR
-import uvloop
 
-turbo_jpeg = TurboJPEG()
+def is_exists(module_name):
+    module_spec = importlib.util.find_spec('turbojpeg')
+    return module_spec is not None
 
-asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+turbojpeg_found = is_exists('turbojpeg')
+if turbojpeg_found:
+    print('turbojpeg found')
+    from turbojpeg import TurboJPEG, TJPF_BGR
+    turbo_jpeg = TurboJPEG()
+
+uvloop_found = is_exists('uvloop')
+if uvloop_found:
+    print('uvloop found')
+    import uvloop
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 loop = asyncio.get_event_loop()
 frame_queue = asyncio.Queue(loop=loop, maxsize=3)
 jpeg_queue = asyncio.Queue(loop=loop, maxsize=3)
 
 def encode_jpeg(frame):
-    #encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
-    #return cv2.imencode('.jpg', frame, encode_param)[1].tobytes()
-    return turbo_jpeg.encode(frame, 90, TJPF_BGR)
+    if turbojpeg_found:
+        return turbo_jpeg.encode(frame, 90, TJPF_BGR)
+    else:
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
+        return cv2.imencode('.jpg', frame, encode_param)[1].tobytes()
 
 async def async_imshow(title, frame):
     cv2.imshow(title, frame)
