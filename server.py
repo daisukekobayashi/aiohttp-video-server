@@ -44,8 +44,7 @@ async def jpeg_converter(frame_queue, jpeg_queue):
         if frame is None:
             break
 
-        with concurrent.futures.ProcessPoolExecutor() as pool:
-            jpeg_frame = await loop.run_in_executor(pool, encode_jpeg, frame)
+        jpeg_frame = encode_jpeg(frame)
         if jpeg_queue.full():
             await jpeg_queue.get()
 
