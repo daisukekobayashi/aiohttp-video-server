@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 
 def is_exists(module_name):
-    module_spec = importlib.util.find_spec('turbojpeg')
+    module_spec = importlib.util.find_spec(module_name)
     return module_spec is not None
 
 turbojpeg_found = is_exists('turbojpeg')
