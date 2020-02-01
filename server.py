@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import concurrent.futures
 import importlib
@@ -7,6 +8,10 @@ import aiohttp
 from aiohttp import web
 import cv2
 import numpy as np
+
+parser = argparse.ArgumentParser(description='aiohttp video server')
+parser.add_argument('--host', type=str, default='0.0.0.0')
+parser.add_argument('--port', type=int, default=8080)
 
 def is_exists(module_name):
     module_spec = importlib.util.find_spec(module_name)
@@ -99,6 +104,7 @@ async def handle_mjpeg_stream(request):
         await response.drain()
 
 if __name__ == '__main__':
+    args = parser.parse_args()
 
     asyncio.ensure_future(capture(frame_queue))
     asyncio.ensure_future(jpeg_converter(frame_queue, jpeg_queue))
@@ -112,7 +118,7 @@ if __name__ == '__main__':
 
     runner = web.AppRunner(app)
     loop.run_until_complete(runner.setup())
-    site = web.TCPSite(runner)
+    site = web.TCPSite(runner, host=args.host, port=args.port)
     loop.run_until_complete(site.start())
 
     loop.run_forever()
